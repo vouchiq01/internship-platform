@@ -8,6 +8,8 @@ import { createTracksRouter, type TracksDeps } from './routes/tracks.js';
 import { createEnrollmentsRouter, type EnrollmentsDeps } from './routes/enrollments.js';
 import { createWebhookRouter, type WebhookDeps } from './routes/webhooks.js';
 import { createLearningRouter, type LearningDeps } from './routes/learning.js';
+import { createSubmissionsRouter, type SubmissionsDeps } from './routes/submissions.js';
+import { createAdminReviewRouter, type AdminReviewDeps } from './routes/admin-review.js';
 
 export interface AppOverrides {
   meDeps?: MeDeps;
@@ -15,6 +17,8 @@ export interface AppOverrides {
   enrollmentsDeps?: EnrollmentsDeps;
   webhookDeps?: WebhookDeps;
   learningDeps?: LearningDeps;
+  submissionsDeps?: SubmissionsDeps;
+  adminReviewDeps?: AdminReviewDeps;
 }
 
 export function createApp(config: Config, overrides: AppOverrides = {}): express.Express {
@@ -42,6 +46,12 @@ export function createApp(config: Config, overrides: AppOverrides = {}): express
     app.use('/api', createEnrollmentsRouter(overrides.enrollmentsDeps));
   }
   if (overrides.learningDeps) app.use('/api', createLearningRouter(overrides.learningDeps));
+  if (overrides.submissionsDeps) {
+    app.use('/api', createSubmissionsRouter(overrides.submissionsDeps));
+  }
+  if (overrides.adminReviewDeps) {
+    app.use('/api/admin', createAdminReviewRouter(overrides.adminReviewDeps));
+  }
 
   app.use(notFoundHandler);
   app.use(errorHandler);

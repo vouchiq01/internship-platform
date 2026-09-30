@@ -1,17 +1,20 @@
 import { createApp } from './app.js';
 import { loadConfig } from './config.js';
 import { createServiceClient } from './supabase.js';
-import { createAuthDeps, createAuthMiddleware } from './middleware/auth.js';
+import { createAuthDeps, createAuthMiddleware, requireAdmin } from './middleware/auth.js';
 import { createMeDeps } from './routes/me.js';
 import { createTracksDeps } from './routes/tracks.js';
 import { createEnrollmentsDeps } from './routes/enrollments.js';
 import { createWebhookDeps } from './routes/webhooks.js';
 import { createLearningDeps } from './routes/learning.js';
+import { createSubmissionsDeps } from './routes/submissions.js';
+import { createAdminReviewDeps } from './routes/admin-review.js';
 import { createRazorpayClient } from './razorpay.js';
 
 const config = loadConfig(process.env);
 const supabase = createServiceClient(config);
 const auth = createAuthMiddleware(createAuthDeps(config, supabase));
+const learningDeps = createLearningDeps(supabase, auth);
 const razorpay = createRazorpayClient(config);
 
 const app = createApp(config, {
@@ -19,7 +22,9 @@ const app = createApp(config, {
   tracksDeps: createTracksDeps(supabase),
   enrollmentsDeps: createEnrollmentsDeps(supabase, razorpay, config.razorpayKeyId, auth),
   webhookDeps: createWebhookDeps(supabase, config.razorpayWebhookSecret),
-  learningDeps: createLearningDeps(supabase, auth),
+  learningDeps,
+  submissionsDeps: createSubmissionsDeps(supabase, learningDeps.getEnrollmentDetail, auth),
+  adminReviewDeps: createAdminReviewDeps(supabase, auth, requireAdmin),
 });
 
 app.listen(config.port, () => {
