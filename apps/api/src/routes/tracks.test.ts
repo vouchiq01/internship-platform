@@ -23,8 +23,8 @@ const qa: Track = { ...dev, id: '22222222-2222-4222-8222-222222222222', slug: 'q
 const devDetail: TrackDetail = {
   ...dev,
   lessons: [
-    { id: '33333333-3333-4333-8333-333333333333', title: 'Lesson one', description: '', youtubeVideoId: 'abc', durationMinutes: 10, sortOrder: 0 },
-    { id: '44444444-4444-4444-8444-444444444444', title: 'Lesson two', description: '', youtubeVideoId: 'def', durationMinutes: 12, sortOrder: 1 },
+    { id: '33333333-3333-4333-8333-333333333333', title: 'Lesson one', description: '', youtubeVideoId: 'abc', creatorName: 'Test Creator', durationMinutes: 10, sortOrder: 0 },
+    { id: '44444444-4444-4444-8444-444444444444', title: 'Lesson two', description: '', youtubeVideoId: 'def', creatorName: 'Test Creator', durationMinutes: 12, sortOrder: 1 },
   ],
   project: { id: '55555555-5555-4555-8555-555555555555', title: 'Full-stack app', briefMarkdown: 'Build it.', requirements: '- Auth' },
 };

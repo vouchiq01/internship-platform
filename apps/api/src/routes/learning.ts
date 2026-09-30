@@ -36,7 +36,7 @@ export function createLearningDeps(
         supabase.from('tracks').select('slug, title').eq('id', enrollmentRow.track_id).maybeSingle(),
         supabase
           .from('lessons')
-          .select('id, title, description, youtube_video_id, duration_minutes, sort_order')
+          .select('id, title, description, youtube_video_id, creator_name, duration_minutes, sort_order')
           .eq('track_id', enrollmentRow.track_id)
           .order('sort_order', { ascending: true }),
         supabase.from('lesson_progress').select('lesson_id').eq('enrollment_id', enrollmentRow.id),
@@ -66,6 +66,7 @@ export function createLearningDeps(
       title: string;
       description: string;
       youtube_video_id: string;
+      creator_name: string;
       duration_minutes: number;
       sort_order: number;
     };
@@ -76,6 +77,7 @@ export function createLearningDeps(
         title: row.title,
         description: row.description,
         youtubeVideoId: row.youtube_video_id,
+        creatorName: row.creator_name ?? '',
         durationMinutes: row.duration_minutes,
         sortOrder: row.sort_order,
         completed: done.has(row.id),

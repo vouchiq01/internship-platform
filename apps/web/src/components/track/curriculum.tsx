@@ -31,6 +31,11 @@ export function Curriculum({ lessons, accent }: { lessons: LessonSummary[]; acce
                   {lesson.description}
                 </p>
               )}
+              {lesson.creatorName && (
+                <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-bone-600">
+                  {lesson.creatorName}
+                </p>
+              )}
             </div>
 
             <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-bone-600">

@@ -88,6 +88,7 @@ export const upsertLessonSchema = z.object({
   title: z.string().trim().min(1).max(200),
   description: z.string().trim().max(1000).default(''),
   youtubeVideoId: youtubeIdSchema,
+  creatorName: z.string().trim().max(120).default(''),
   durationMinutes: z.number().int().min(0).max(600).default(0),
   sortOrder: z.number().int().min(0).max(999),
 });

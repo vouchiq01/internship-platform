@@ -90,6 +90,21 @@ export function Player({ initial }: { initial: EnrollmentDetail }) {
             <h1 className="mt-8 font-display text-4xl leading-tight tracking-[-0.02em]">
               {active.title}
             </h1>
+
+            {active.creatorName && (
+              <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-bone-600">
+                Video by {active.creatorName} ·{' '}
+                <a
+                  href={`https://www.youtube.com/watch?v=${active.youtubeVideoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-4 transition-colors hover:text-bone-200"
+                >
+                  watch on YouTube
+                </a>
+              </p>
+            )}
+
             {active.description && (
               <p className="mt-4 max-w-2xl leading-relaxed text-bone-400">
                 {active.description}

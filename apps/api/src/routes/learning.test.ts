@@ -21,7 +21,7 @@ function detail(completed: string[] = []): EnrollmentDetail {
     id,
     title: `Lesson ${i}`,
     description: '',
-    youtubeVideoId: 'abc',
+    youtubeVideoId: 'abc', creatorName: 'Test Creator',
     durationMinutes: 10,
     sortOrder: i,
     completed: completed.includes(id),

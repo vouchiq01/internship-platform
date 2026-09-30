@@ -24,3 +24,14 @@ There is no local Docker stack on this machine.
 ## Promoting an admin
 
     update public.profiles set role = 'admin' where email = 'you@example.com';
+
+## Checking the curriculum videos
+
+The lessons embed third-party YouTube videos. Creators delete videos and
+disable embedding without warning, and a dead embed is a silent failure — the
+student sees an empty player and assumes the product is broken.
+
+    node scripts/check-video-links.mjs
+
+It exits non-zero if anything fails, so it can gate CI or run on a schedule.
+Replace anything it flags from the admin track editor.

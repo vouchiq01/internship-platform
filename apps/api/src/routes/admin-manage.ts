@@ -258,6 +258,7 @@ export function createAdminManageDeps(
           title: input.title,
           description: input.description,
           youtube_video_id: input.youtubeVideoId,
+          creator_name: input.creatorName,
           duration_minutes: input.durationMinutes,
           sort_order: input.sortOrder,
         })
@@ -274,6 +275,7 @@ export function createAdminManageDeps(
           title: input.title,
           description: input.description,
           youtube_video_id: input.youtubeVideoId,
+          creator_name: input.creatorName,
           duration_minutes: input.durationMinutes,
           sort_order: input.sortOrder,
         })

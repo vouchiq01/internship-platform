@@ -22,6 +22,8 @@ export const lessonSummarySchema = z.object({
   title: z.string(),
   description: z.string(),
   youtubeVideoId: z.string(),
+  /** Attribution for the third-party video. Shown wherever the lesson is. */
+  creatorName: z.string(),
   durationMinutes: z.number().int().nonnegative(),
   sortOrder: z.number().int(),
 });

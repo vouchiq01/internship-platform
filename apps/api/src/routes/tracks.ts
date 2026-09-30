@@ -27,6 +27,7 @@ interface LessonRow {
   title: string;
   description: string;
   youtube_video_id: string;
+  creator_name: string;
   duration_minutes: number;
   sort_order: number;
 }
@@ -59,6 +60,7 @@ function rowToLesson(row: LessonRow): LessonSummary {
     title: row.title,
     description: row.description,
     youtubeVideoId: row.youtube_video_id,
+    creatorName: row.creator_name ?? '',
     durationMinutes: row.duration_minutes,
     sortOrder: row.sort_order,
   };
@@ -97,7 +99,7 @@ export function createTracksDeps(supabase: SupabaseClient): TracksDeps {
       const [{ data: lessons }, { data: project }] = await Promise.all([
         supabase
           .from('lessons')
-          .select('id, title, description, youtube_video_id, duration_minutes, sort_order')
+          .select('id, title, description, youtube_video_id, creator_name, duration_minutes, sort_order')
           .eq('track_id', (track as TrackRow).id)
           .order('sort_order', { ascending: true }),
         supabase
