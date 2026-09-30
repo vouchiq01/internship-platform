@@ -8,6 +8,9 @@ const testConfig: Config = {
   supabaseUrl: 'https://test.supabase.co',
   supabaseServiceRoleKey: 'test-service-role-key',
   webOrigin: 'http://localhost:3000',
+  razorpayKeyId: 'rzp_test_key',
+  razorpayKeySecret: 'rzp_test_secret',
+  razorpayWebhookSecret: 'rzp_test_webhook_secret',
 };
 
 describe('GET /health', () => {
