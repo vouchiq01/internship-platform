@@ -18,6 +18,8 @@ export const enrollmentWithTrackSchema = enrollmentSchema.extend({
   trackSlug: z.string(),
   lessonsTotal: z.number().int().nonnegative(),
   lessonsCompleted: z.number().int().nonnegative(),
+  certificateNumber: z.string().nullable(),
+  certificatePdfUrl: z.string().nullable(),
 });
 
 export type EnrollmentWithTrack = z.infer<typeof enrollmentWithTrackSchema>;

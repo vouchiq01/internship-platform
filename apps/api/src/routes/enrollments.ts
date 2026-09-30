@@ -107,10 +107,28 @@ export function createEnrollmentsDeps(
     async listEnrollments(userId) {
       const { data, error } = await supabase
         .from('enrollments')
-        .select('id, user_id, track_id, status, enrolled_at, completed_at, tracks(title, slug)')
+        .select(
+          `id, user_id, track_id, status, enrolled_at, completed_at,
+           tracks(title, slug),
+           lesson_progress(lesson_id),
+           certificates(certificate_number, pdf_url)`,
+        )
         .eq('user_id', userId)
         .order('enrolled_at', { ascending: false });
       if (error) throw new AppError(500, 'enrollment_list_failed', error.message);
+
+      // One extra query for the per-track lesson totals, rather than N.
+      const trackIds = [...new Set(((data ?? []) as { track_id: string }[]).map((r) => r.track_id))];
+      const totals = new Map<string, number>();
+      if (trackIds.length > 0) {
+        const { data: lessonRows } = await supabase
+          .from('lessons')
+          .select('track_id')
+          .in('track_id', trackIds);
+        for (const row of (lessonRows ?? []) as { track_id: string }[]) {
+          totals.set(row.track_id, (totals.get(row.track_id) ?? 0) + 1);
+        }
+      }
 
       type TrackRef = { title: string; slug: string };
       type Row = {
@@ -126,10 +144,18 @@ export function createEnrollmentsDeps(
          * force-casting past the mismatch.
          */
         tracks: TrackRef | TrackRef[] | null;
+        lesson_progress: { lesson_id: string }[] | null;
+        certificates:
+          | { certificate_number: string; pdf_url: string | null }
+          | { certificate_number: string; pdf_url: string | null }[]
+          | null;
       };
 
       const firstTrack = (t: Row['tracks']): TrackRef | null =>
         Array.isArray(t) ? (t[0] ?? null) : t;
+
+      const firstCert = (c: Row['certificates']) =>
+        Array.isArray(c) ? (c[0] ?? null) : c;
 
       return ((data ?? []) as unknown as Row[]).map((row) => ({
         id: row.id,
@@ -140,8 +166,10 @@ export function createEnrollmentsDeps(
         completedAt: row.completed_at,
         trackTitle: firstTrack(row.tracks)?.title ?? '',
         trackSlug: firstTrack(row.tracks)?.slug ?? '',
-        lessonsTotal: 0,
-        lessonsCompleted: 0,
+        lessonsTotal: totals.get(row.track_id) ?? 0,
+        lessonsCompleted: row.lesson_progress?.length ?? 0,
+        certificateNumber: firstCert(row.certificates)?.certificate_number ?? null,
+        certificatePdfUrl: firstCert(row.certificates)?.pdf_url ?? null,
       }));
     },
   };
