@@ -1,0 +1,19 @@
+{
+  "name": "internship-platform",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "apps/*"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build:shared": "npm run build --workspace @internship/shared",
+    "build": "npm run build --workspaces --if-present",
+    "dev:api": "npm run build:shared && npm run dev --workspace @internship/api",
+    "dev:web": "npm run build:shared && npm run dev --workspace @internship/web"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
