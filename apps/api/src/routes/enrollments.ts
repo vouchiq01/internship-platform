@@ -112,6 +112,7 @@ export function createEnrollmentsDeps(
         .order('enrolled_at', { ascending: false });
       if (error) throw new AppError(500, 'enrollment_list_failed', error.message);
 
+      type TrackRef = { title: string; slug: string };
       type Row = {
         id: string;
         user_id: string;
@@ -119,18 +120,26 @@ export function createEnrollmentsDeps(
         status: EnrollmentStatus;
         enrolled_at: string;
         completed_at: string | null;
-        tracks: { title: string; slug: string } | null;
+        /**
+         * PostgREST returns an object for a many-to-one embed, but the
+         * generated types widen it to an array. Accept both rather than
+         * force-casting past the mismatch.
+         */
+        tracks: TrackRef | TrackRef[] | null;
       };
 
-      return ((data ?? []) as Row[]).map((row) => ({
+      const firstTrack = (t: Row['tracks']): TrackRef | null =>
+        Array.isArray(t) ? (t[0] ?? null) : t;
+
+      return ((data ?? []) as unknown as Row[]).map((row) => ({
         id: row.id,
         userId: row.user_id,
         trackId: row.track_id,
         status: row.status,
         enrolledAt: row.enrolled_at,
         completedAt: row.completed_at,
-        trackTitle: row.tracks?.title ?? '',
-        trackSlug: row.tracks?.slug ?? '',
+        trackTitle: firstTrack(row.tracks)?.title ?? '',
+        trackSlug: firstTrack(row.tracks)?.slug ?? '',
         lessonsTotal: 0,
         lessonsCompleted: 0,
       }));
