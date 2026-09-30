@@ -1,0 +1,62 @@
+export interface TrackMeta {
+  code: string;
+  slug: string;
+  title: string;
+  blurb: string;
+  /** CSS custom-property name for this track's index colour. */
+  accent: string;
+  weeks: number;
+  modules: number;
+  project: string;
+}
+
+/**
+ * Marketing copy for the four launch tracks. The database is the source of
+ * truth for price and publication state; this is presentation only.
+ */
+export const TRACKS: TrackMeta[] = [
+  {
+    code: 'DEV',
+    slug: 'development',
+    title: 'Development',
+    blurb:
+      'Ship a full-stack application with authentication, a real database and a deploy pipeline.',
+    accent: 'var(--color-track-dev)',
+    weeks: 8,
+    modules: 24,
+    project: 'Full-stack web application',
+  },
+  {
+    code: 'QA',
+    slug: 'qa',
+    title: 'Quality Assurance',
+    blurb:
+      'Build an end-to-end automation suite that catches real regressions, not just green ticks.',
+    accent: 'var(--color-track-qa)',
+    weeks: 8,
+    modules: 21,
+    project: 'E2E automation framework',
+  },
+  {
+    code: 'AI',
+    slug: 'ai-engineering',
+    title: 'AI Engineering',
+    blurb:
+      'Take a model from prompt to production — retrieval, evaluation, and cost you can defend.',
+    accent: 'var(--color-track-ai)',
+    weeks: 10,
+    modules: 26,
+    project: 'Retrieval-augmented application',
+  },
+  {
+    code: 'OPS',
+    slug: 'devops',
+    title: 'DevOps',
+    blurb:
+      'Containerise, automate and observe a service until a deploy stops being frightening.',
+    accent: 'var(--color-track-ops)',
+    weeks: 8,
+    modules: 22,
+    project: 'CI/CD pipeline with monitoring',
+  },
+];

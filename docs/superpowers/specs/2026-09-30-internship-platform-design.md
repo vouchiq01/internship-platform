@@ -386,9 +386,31 @@ No secret is ever exposed under a `NEXT_PUBLIC_` prefix. The Razorpay
 **key ID** is public by design; the **key secret** and **webhook secret**
 live only on Render.
 
-## 12. Open items
+## 12. Pricing
 
-- Pricing per track — not needed until Phase 2
+**₹1,999 per track, shown against a ₹6,000 list price.**
+
+Per track, not for all four — `price_inr` lives on the `tracks` table, so each
+track carries its own price and they can diverge later.
+
+This needs a second column, `list_price_inr`, added by migration in Phase 2.
+The strike-through price is display data, never the basis of a charge: the
+Razorpay order amount is always computed from `price_inr`.
+
+**One caution, stated once.** A struck-through price that nothing was ever
+sold at is a misleading-advertising exposure in India — ASCI's code and the
+CCPA's 2022 dark-patterns guidelines both treat a fabricated "original" price
+as a prohibited pattern. Keep ₹6,000 defensible: either genuinely offer the
+track at ₹6,000 for a period, or present it as an explicitly time-bound
+launch offer with an end date. This is a business decision, not a code one,
+and it is recorded here so it is not forgotten at launch.
+
+## 13. Open items
+
+- ~~Pricing per track~~ — **resolved: ₹1,999 per track, anchored against a
+  ₹6,000 list price.** Stored as `price_inr = 1999` and
+  `list_price_inr = 6000`; a later migration adds the second column.
+  See "Pricing" below.
 - Transactional email provider (Resend assumed) for payment receipt,
   review outcome, certificate issued
 - Domain name

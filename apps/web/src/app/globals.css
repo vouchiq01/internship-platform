@@ -1,1 +1,117 @@
 @import "tailwindcss";
+
+@theme {
+  /* Ink — a near-black with a warm cast, not the default slate-blue */
+  --color-ink-900: #0b0a0c;
+  --color-ink-800: #121013;
+  --color-ink-700: #1a171c;
+  --color-ink-600: #252128;
+
+  /* Paper — the inverted "document" surfaces */
+  --color-bone-100: #f3eee5;
+  --color-bone-200: #e6ddcd;
+  --color-bone-400: #a89e8c;
+  --color-bone-600: #6b6357;
+
+  /* Track index colours — meaning, not decoration */
+  --color-track-dev: #6e7bff;
+  --color-track-qa: #14c08b;
+  --color-track-ai: #b76bff;
+  --color-track-ops: #ffa23a;
+
+  --font-display: var(--font-instrument-serif), Georgia, serif;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+}
+
+:root {
+  --rule: color-mix(in srgb, var(--color-bone-100) 12%, transparent);
+  --rule-strong: color-mix(in srgb, var(--color-bone-100) 24%, transparent);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--color-ink-900);
+  color: var(--color-bone-100);
+  font-family: var(--font-sans);
+}
+
+/* ---------- Grain: the single texture that stops this reading as flat CSS ---------- */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* ---------- Drafting grid ---------- */
+.draft-grid {
+  background-image:
+    linear-gradient(to right, var(--rule) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--rule) 1px, transparent 1px);
+  background-size: 96px 96px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 78%);
+}
+
+/* ---------- Motion ---------- */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(1.1rem); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes clip-up {
+  from { opacity: 0; clip-path: inset(100% 0 0 0); transform: translateY(0.6rem); }
+  to   { opacity: 1; clip-path: inset(-20% 0 -20% 0); transform: none; }
+}
+
+@keyframes draw-x {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@keyframes seal-in {
+  from { opacity: 0; transform: rotate(-14deg) scale(0.86); }
+  to   { opacity: 1; transform: rotate(-6deg) scale(1); }
+}
+
+.anim-clip  { animation: clip-up 0.85s cubic-bezier(0.16, 0.84, 0.28, 1) both; }
+.anim-rise  { animation: rise 0.7s cubic-bezier(0.16, 0.84, 0.28, 1) both; }
+.anim-rule  { animation: draw-x 0.9s cubic-bezier(0.65, 0, 0.35, 1) both; transform-origin: left; }
+.anim-seal  { animation: seal-in 0.8s cubic-bezier(0.34, 1.4, 0.4, 1) both; }
+
+/* Scroll reveal — set by IntersectionObserver */
+.reveal {
+  opacity: 0;
+  transform: translateY(1.75rem);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 0.84, 0.28, 1),
+    transform 0.8s cubic-bezier(0.16, 0.84, 0.28, 1);
+}
+.reveal.is-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .anim-clip, .anim-rise, .anim-rule, .anim-seal { animation: none !important; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---------- Guilloché: the security-document pattern on the certificate ---------- */
+.guilloche {
+  background-image:
+    repeating-radial-gradient(circle at 18% 120%, transparent 0 13px, color-mix(in srgb, var(--color-bone-600) 24%, transparent) 13px 14px),
+    repeating-radial-gradient(circle at 86% -20%, transparent 0 17px, color-mix(in srgb, var(--color-bone-600) 18%, transparent) 17px 18px);
+}
+
+::selection {
+  background: var(--color-track-dev);
+  color: #fff;
+}
