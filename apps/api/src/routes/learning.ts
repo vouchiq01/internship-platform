@@ -7,6 +7,7 @@ import {
   type SubmissionSummary,
 } from '@internship/shared';
 import { AppError } from '../errors.js';
+import { requireParam } from '../params.js';
 
 export interface LearningDeps {
   auth: RequestHandler;
@@ -180,7 +181,7 @@ export function createLearningRouter(deps: LearningDeps): Router {
 
   router.get('/enrollments/:id', deps.auth, async (req, res, next) => {
     try {
-      const detail = await deps.getEnrollmentDetail(req.auth!.id, req.params.id);
+      const detail = await deps.getEnrollmentDetail(req.auth!.id, requireParam(req, 'id'));
       if (!detail) throw new AppError(404, 'not_found', 'Enrollment not found');
       res.json(detail);
     } catch (err) {
@@ -190,7 +191,7 @@ export function createLearningRouter(deps: LearningDeps): Router {
 
   router.post('/lessons/:id/complete', deps.auth, async (req, res, next) => {
     try {
-      const lessonId = req.params.id;
+      const lessonId = requireParam(req, 'id');
       const found = await deps.findEnrollmentForLesson(req.auth!.id, lessonId);
       if (!found) throw new AppError(404, 'not_found', 'Lesson not found');
 

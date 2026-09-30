@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { LessonSummary, ProjectSummary, Track, TrackDetail } from '@internship/shared';
 import { AppError } from '../errors.js';
+import { requireParam } from '../params.js';
 
 export interface TracksDeps {
   listTracks(): Promise<Track[]>;
@@ -131,7 +132,7 @@ export function createTracksRouter(deps: TracksDeps): Router {
 
   router.get('/tracks/:slug', async (req, res, next) => {
     try {
-      const track = await deps.getTrackBySlug(req.params.slug);
+      const track = await deps.getTrackBySlug(requireParam(req, 'slug'));
       if (!track || !track.isPublished) {
         throw new AppError(404, 'not_found', 'Track not found');
       }
