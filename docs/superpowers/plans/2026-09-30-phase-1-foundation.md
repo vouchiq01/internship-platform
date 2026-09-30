@@ -6,7 +6,16 @@
 
 **Architecture:** npm-workspaces monorepo. Next.js 15 on Vercel talks to Supabase **for authentication only**; all domain data flows through an Express API on Render that holds the `service_role` key. Shared Zod schemas in `packages/shared` are the contract between them.
 
-**Tech Stack:** TypeScript 5.7 (strict), Node 24, npm workspaces, Next.js 15 (App Router), Express 5, Supabase (Postgres + Auth + Storage), Zod 3, `jose` for JWT verification, Vitest + Supertest, Tailwind CSS 4.
+**Tech Stack:** TypeScript 5.7 (strict), Node 24, npm workspaces, Next.js 16 (App Router), Express 5, Supabase (Postgres + Auth + Storage), Zod 3, `jose` for JWT verification, Vitest 5 + Supertest, Tailwind CSS 4.
+
+> **Versions corrected during execution.** The pins originally written into
+> this plan were stale and two carried security advisories. Actual versions:
+> `next@16` (Next 15's postcss chain had a high-severity advisory; Next 16
+> also renames `middleware.ts` to `proxy.ts`), `vitest@5` (critical advisory
+> in the vite dev-server chain), `@supabase/ssr@0.12` and
+> `@supabase/supabase-js@2.117`. `npm audit` reports zero vulnerabilities.
+> Where a code block below says `middleware.ts`, the file is `src/proxy.ts`
+> and the exported function is `proxy`, not `middleware`.
 
 **Spec:** [`docs/superpowers/specs/2026-09-30-internship-platform-design.md`](../specs/2026-09-30-internship-platform-design.md)
 
