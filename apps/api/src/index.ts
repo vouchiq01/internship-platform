@@ -6,6 +6,7 @@ import { createMeDeps } from './routes/me.js';
 import { createTracksDeps } from './routes/tracks.js';
 import { createEnrollmentsDeps } from './routes/enrollments.js';
 import { createWebhookDeps } from './routes/webhooks.js';
+import { createLearningDeps } from './routes/learning.js';
 import { createRazorpayClient } from './razorpay.js';
 
 const config = loadConfig(process.env);
@@ -18,6 +19,7 @@ const app = createApp(config, {
   tracksDeps: createTracksDeps(supabase),
   enrollmentsDeps: createEnrollmentsDeps(supabase, razorpay, config.razorpayKeyId, auth),
   webhookDeps: createWebhookDeps(supabase, config.razorpayWebhookSecret),
+  learningDeps: createLearningDeps(supabase, auth),
 });
 
 app.listen(config.port, () => {

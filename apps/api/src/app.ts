@@ -7,12 +7,14 @@ import { createMeRouter, type MeDeps } from './routes/me.js';
 import { createTracksRouter, type TracksDeps } from './routes/tracks.js';
 import { createEnrollmentsRouter, type EnrollmentsDeps } from './routes/enrollments.js';
 import { createWebhookRouter, type WebhookDeps } from './routes/webhooks.js';
+import { createLearningRouter, type LearningDeps } from './routes/learning.js';
 
 export interface AppOverrides {
   meDeps?: MeDeps;
   tracksDeps?: TracksDeps;
   enrollmentsDeps?: EnrollmentsDeps;
   webhookDeps?: WebhookDeps;
+  learningDeps?: LearningDeps;
 }
 
 export function createApp(config: Config, overrides: AppOverrides = {}): express.Express {
@@ -39,6 +41,7 @@ export function createApp(config: Config, overrides: AppOverrides = {}): express
   if (overrides.enrollmentsDeps) {
     app.use('/api', createEnrollmentsRouter(overrides.enrollmentsDeps));
   }
+  if (overrides.learningDeps) app.use('/api', createLearningRouter(overrides.learningDeps));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
