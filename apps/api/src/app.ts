@@ -11,6 +11,8 @@ import { createLearningRouter, type LearningDeps } from './routes/learning.js';
 import { createSubmissionsRouter, type SubmissionsDeps } from './routes/submissions.js';
 import { createAdminReviewRouter, type AdminReviewDeps } from './routes/admin-review.js';
 import { createVerifyRouter, type VerifyDeps } from './routes/verify.js';
+import { createAdminManageRouter, type AdminManageDeps } from './routes/admin-manage.js';
+import { createAdminInsightsRouter, type AdminInsightsDeps } from './routes/admin-insights.js';
 
 export interface AppOverrides {
   meDeps?: MeDeps;
@@ -21,6 +23,8 @@ export interface AppOverrides {
   submissionsDeps?: SubmissionsDeps;
   adminReviewDeps?: AdminReviewDeps;
   verifyDeps?: VerifyDeps;
+  adminManageDeps?: AdminManageDeps;
+  adminInsightsDeps?: AdminInsightsDeps;
 }
 
 export function createApp(config: Config, overrides: AppOverrides = {}): express.Express {
@@ -54,6 +58,12 @@ export function createApp(config: Config, overrides: AppOverrides = {}): express
   }
   if (overrides.adminReviewDeps) {
     app.use('/api/admin', createAdminReviewRouter(overrides.adminReviewDeps));
+  }
+  if (overrides.adminManageDeps) {
+    app.use('/api/admin', createAdminManageRouter(overrides.adminManageDeps));
+  }
+  if (overrides.adminInsightsDeps) {
+    app.use('/api/admin', createAdminInsightsRouter(overrides.adminInsightsDeps));
   }
 
   app.use(notFoundHandler);
