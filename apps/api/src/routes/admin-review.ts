@@ -12,7 +12,7 @@ export interface AdminReviewDeps {
   auth: RequestHandler;
   requireAdmin: RequestHandler;
   listPending(): Promise<ReviewQueueItem[]>;
-  getSubmissionStatus(id: string): Promise<SubmissionStatus | null>;
+  getSubmission(id: string): Promise<{ status: SubmissionStatus; enrollmentId: string } | null>;
   applyReview(
     submissionId: string,
     reviewerId: string,
@@ -20,16 +20,24 @@ export interface AdminReviewDeps {
     feedback: string,
   ): Promise<void>;
   logAudit(action: string, entityId: string, metadata: Record<string, unknown>): Promise<void>;
+  /**
+   * Called after a submission is approved. Issues the certificate.
+   * Separate from applyReview so a failure here leaves the approval recorded
+   * and the issue retryable, rather than silently losing the review.
+   */
+  onApproved(enrollmentId: string): Promise<{ certificateNumber: string } | null>;
 }
 
 export function createAdminReviewDeps(
   supabase: SupabaseClient,
   auth: RequestHandler,
   requireAdmin: RequestHandler,
+  onApproved: AdminReviewDeps['onApproved'],
 ): AdminReviewDeps {
   return {
     auth,
     requireAdmin,
+    onApproved,
 
     async listPending() {
       const { data, error } = await supabase
@@ -83,14 +91,16 @@ export function createAdminReviewDeps(
       });
     },
 
-    async getSubmissionStatus(id) {
+    async getSubmission(id) {
       const { data, error } = await supabase
         .from('submissions')
-        .select('status')
+        .select('status, enrollment_id')
         .eq('id', id)
         .maybeSingle();
       if (error) throw new AppError(500, 'submission_lookup_failed', error.message);
-      return (data as { status: SubmissionStatus } | null)?.status ?? null;
+      if (!data) return null;
+      const row = data as { status: SubmissionStatus; enrollment_id: string };
+      return { status: row.status, enrollmentId: row.enrollment_id };
     },
 
     async applyReview(submissionId, reviewerId, status, feedback) {
@@ -148,9 +158,9 @@ export function createAdminReviewRouter(deps: AdminReviewDeps): Router {
           );
         }
 
-        const current = await deps.getSubmissionStatus(submissionId);
+        const current = await deps.getSubmission(submissionId);
         if (!current) throw new AppError(404, 'not_found', 'Submission not found');
-        if (current !== 'pending') {
+        if (current.status !== 'pending') {
           throw new AppError(409, 'already_reviewed', 'This submission was already reviewed');
         }
 
@@ -161,7 +171,13 @@ export function createAdminReviewRouter(deps: AdminReviewDeps): Router {
           hasFeedback: parsed.data.feedback.length > 0,
         });
 
-        res.json({ id: submissionId, status });
+        let certificateNumber: string | null = null;
+        if (status === 'approved') {
+          const issued = await deps.onApproved(current.enrollmentId);
+          certificateNumber = issued?.certificateNumber ?? null;
+        }
+
+        res.json({ id: submissionId, status, certificateNumber });
       } catch (err) {
         next(err);
       }

@@ -8,6 +8,7 @@ import { errorHandler } from '../errors.js';
 import type { UserRole } from '@internship/shared';
 
 const SUB = '66666666-6666-4666-8666-666666666666';
+const ENR = '88888888-8888-4888-8888-888888888888';
 
 const as = (role: UserRole): RequestHandler => (req, _res, next) => {
   req.auth = { id: 'admin-1', email: 'a@example.com', role };
@@ -31,14 +32,16 @@ const queueItem: ReviewQueueItem = {
 function buildApp(role: UserRole = 'admin', over: Partial<AdminReviewDeps> = {}) {
   const applyReview = vi.fn(async () => {});
   const logAudit = vi.fn(async () => {});
+  const onApproved = vi.fn(async () => ({ certificateNumber: 'INTX-2026-DEV-00042' }));
 
   const deps: AdminReviewDeps = {
     auth: as(role),
     requireAdmin,
     listPending: async () => [queueItem],
-    getSubmissionStatus: async (id) => (id === SUB ? 'pending' : null),
+    getSubmission: async (id) => (id === SUB ? { status: 'pending', enrollmentId: ENR } : null),
     applyReview,
     logAudit,
+    onApproved,
     ...over,
   };
 
@@ -46,7 +49,7 @@ function buildApp(role: UserRole = 'admin', over: Partial<AdminReviewDeps> = {})
   app.use(express.json());
   app.use('/api/admin', createAdminReviewRouter(deps));
   app.use(errorHandler);
-  return { app, applyReview, logAudit };
+  return { app, applyReview, logAudit, onApproved };
 }
 
 describe('GET /api/admin/submissions', () => {
@@ -85,6 +88,23 @@ describe('POST /api/admin/submissions/:id/review', () => {
     expect(logAudit).toHaveBeenCalled();
   });
 
+  it('issues a certificate when a submission is approved', async () => {
+    const { app, onApproved } = buildApp('admin');
+    const res = await request(app)
+      .post(`/api/admin/submissions/${SUB}/review`)
+      .send({ decision: 'approve' });
+    expect(onApproved).toHaveBeenCalledWith(ENR);
+    expect(res.body.certificateNumber).toBe('INTX-2026-DEV-00042');
+  });
+
+  it('does NOT issue a certificate on rejection', async () => {
+    const { app, onApproved } = buildApp('admin');
+    await request(app)
+      .post(`/api/admin/submissions/${SUB}/review`)
+      .send({ decision: 'reject', feedback: 'The README has no setup steps.' });
+    expect(onApproved).not.toHaveBeenCalled();
+  });
+
   it('rejects with feedback', async () => {
     const { app, applyReview } = buildApp('admin');
     const res = await request(app)
@@ -109,7 +129,7 @@ describe('POST /api/admin/submissions/:id/review', () => {
   });
 
   it('404s an unknown submission', async () => {
-    const { app, applyReview } = buildApp('admin', { getSubmissionStatus: async () => null });
+    const { app, applyReview } = buildApp('admin', { getSubmission: async () => null });
     const res = await request(app)
       .post(`/api/admin/submissions/${SUB}/review`)
       .send({ decision: 'approve' });
@@ -119,7 +139,7 @@ describe('POST /api/admin/submissions/:id/review', () => {
 
   it('REFUSES to review a submission that was already reviewed', async () => {
     const { app, applyReview } = buildApp('admin', {
-      getSubmissionStatus: async () => 'approved',
+      getSubmission: async () => ({ status: 'approved', enrollmentId: ENR }),
     });
     const res = await request(app)
       .post(`/api/admin/submissions/${SUB}/review`)

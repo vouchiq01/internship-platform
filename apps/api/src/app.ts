@@ -10,6 +10,7 @@ import { createWebhookRouter, type WebhookDeps } from './routes/webhooks.js';
 import { createLearningRouter, type LearningDeps } from './routes/learning.js';
 import { createSubmissionsRouter, type SubmissionsDeps } from './routes/submissions.js';
 import { createAdminReviewRouter, type AdminReviewDeps } from './routes/admin-review.js';
+import { createVerifyRouter, type VerifyDeps } from './routes/verify.js';
 
 export interface AppOverrides {
   meDeps?: MeDeps;
@@ -19,6 +20,7 @@ export interface AppOverrides {
   learningDeps?: LearningDeps;
   submissionsDeps?: SubmissionsDeps;
   adminReviewDeps?: AdminReviewDeps;
+  verifyDeps?: VerifyDeps;
 }
 
 export function createApp(config: Config, overrides: AppOverrides = {}): express.Express {
@@ -41,6 +43,7 @@ export function createApp(config: Config, overrides: AppOverrides = {}): express
 
   app.use(healthRouter);
   if (overrides.tracksDeps) app.use('/api', createTracksRouter(overrides.tracksDeps));
+  if (overrides.verifyDeps) app.use('/api', createVerifyRouter(overrides.verifyDeps));
   if (overrides.meDeps) app.use('/api', createMeRouter(overrides.meDeps));
   if (overrides.enrollmentsDeps) {
     app.use('/api', createEnrollmentsRouter(overrides.enrollmentsDeps));

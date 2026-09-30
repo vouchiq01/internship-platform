@@ -9,12 +9,15 @@ import { createWebhookDeps } from './routes/webhooks.js';
 import { createLearningDeps } from './routes/learning.js';
 import { createSubmissionsDeps } from './routes/submissions.js';
 import { createAdminReviewDeps } from './routes/admin-review.js';
+import { createVerifyDeps } from './routes/verify.js';
+import { createIssuanceDeps, issueCertificate } from './certificates.js';
 import { createRazorpayClient } from './razorpay.js';
 
 const config = loadConfig(process.env);
 const supabase = createServiceClient(config);
 const auth = createAuthMiddleware(createAuthDeps(config, supabase));
 const learningDeps = createLearningDeps(supabase, auth);
+const issuanceDeps = createIssuanceDeps(supabase, config.webOrigin);
 const razorpay = createRazorpayClient(config);
 
 const app = createApp(config, {
@@ -24,7 +27,10 @@ const app = createApp(config, {
   webhookDeps: createWebhookDeps(supabase, config.razorpayWebhookSecret),
   learningDeps,
   submissionsDeps: createSubmissionsDeps(supabase, learningDeps.getEnrollmentDetail, auth),
-  adminReviewDeps: createAdminReviewDeps(supabase, auth, requireAdmin),
+  adminReviewDeps: createAdminReviewDeps(supabase, auth, requireAdmin, (enrollmentId) =>
+    issueCertificate(issuanceDeps, enrollmentId),
+  ),
+  verifyDeps: createVerifyDeps(supabase),
 });
 
 app.listen(config.port, () => {
