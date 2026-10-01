@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { TrackDetail } from '@internship/shared';
-import { publicFetch, ApiError } from '@/lib/api';
+import { publicFetch, classifyApiError, logApiFailure } from '@/lib/api';
+import { ServiceUnavailable } from '@/components/service-unavailable';
 import { accentFor, codeFor } from '@/lib/track-accent';
 import { Nav } from '@/components/landing/nav';
 import { Footer } from '@/components/landing/footer';
@@ -15,12 +16,30 @@ export default async function TrackPage({
 }) {
   const { slug } = await params;
 
-  let track: TrackDetail;
+  // A missing track is a 404 the visitor should see. Our backend being
+  // unreachable is our problem, and must not render as a crash on a public
+  // page someone is using to decide whether to pay us.
+  let track: TrackDetail | null = null;
+  let failure: ReturnType<typeof classifyApiError> | null = null;
+
   try {
     track = await publicFetch<TrackDetail>(`/api/tracks/${slug}`);
   } catch (err) {
-    if (err instanceof ApiError && err.status === 404) notFound();
-    throw err;
+    failure = classifyApiError(err);
+    if (failure !== 'not-found') logApiFailure(`GET /api/tracks/${slug}`, err);
+  }
+
+  if (failure === 'not-found') notFound();
+
+  if (!track) {
+    return (
+      <ServiceUnavailable
+        title="We could not load this track just now."
+        body="Something on our side is not responding. The track is still here — try again in a moment."
+        backHref="/#tracks"
+        backLabel="See all tracks"
+      />
+    );
   }
 
   const accent = accentFor(track.slug);

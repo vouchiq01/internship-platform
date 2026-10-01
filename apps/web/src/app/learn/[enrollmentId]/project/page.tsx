@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { EnrollmentDetail, SubmissionSummary } from '@internship/shared';
-import { apiFetch, ApiError } from '@/lib/api';
+import { apiFetch, classifyApiError, logApiFailure } from '@/lib/api';
+import { ServiceUnavailable } from '@/components/service-unavailable';
 import { accentFor } from '@/lib/track-accent';
 import { SubmissionForm } from '@/components/learn/submission-form';
 
@@ -60,12 +61,27 @@ export default async function ProjectPage({
 }) {
   const { enrollmentId } = await params;
 
-  let detail: EnrollmentDetail;
+  let detail: EnrollmentDetail | null = null;
+  let failure: ReturnType<typeof classifyApiError> | null = null;
+
   try {
     detail = await apiFetch<EnrollmentDetail>(`/api/enrollments/${enrollmentId}`);
   } catch (err) {
-    if (err instanceof ApiError && (err.status === 404 || err.status === 401)) notFound();
-    throw err;
+    failure = classifyApiError(err);
+    if (failure === 'unavailable') logApiFailure(`GET /api/enrollments/${enrollmentId}`, err);
+  }
+
+  if (failure === 'not-found' || failure === 'unauthorized') notFound();
+
+  if (!detail) {
+    return (
+      <ServiceUnavailable
+        title="We could not load your project just now."
+        body="Any submission you have already made is safe. Try again in a moment."
+        backHref="/dashboard"
+        backLabel="Back to your dashboard"
+      />
+    );
   }
 
   if (!detail.project) notFound();
