@@ -1,8 +1,43 @@
 import Link from 'next/link';
+import type { TrackWithCount } from '@internship/shared';
 import { TRACKS } from '@/lib/tracks';
+import { publicFetch } from '@/lib/api';
 import { Reveal } from './reveal';
 
-export function Tracks() {
+/**
+ * Merges the static marketing copy with live catalogue data.
+ *
+ * Module counts come from the database, never from this file — the landing
+ * page previously advertised 24 modules for a track that shipped 6, which a
+ * student discovers the moment they click through.
+ *
+ * If the catalogue cannot be reached the cards still render, but without a
+ * count: showing a stale number is worse than showing none, and the landing
+ * page must never be the thing that goes down.
+ */
+async function loadTracks() {
+  let live: TrackWithCount[] = [];
+  try {
+    live = await publicFetch<TrackWithCount[]>('/api/tracks');
+  } catch {
+    live = [];
+  }
+
+  const bySlug = new Map(live.map((t) => [t.slug, t]));
+
+  return TRACKS.map((track) => {
+    const match = bySlug.get(track.slug);
+    return {
+      ...track,
+      weeks: match?.durationWeeks ?? track.weeks,
+      lessonCount: match?.lessonCount ?? null,
+    };
+  });
+}
+
+export async function Tracks() {
+  const tracks = await loadTracks();
+
   return (
     <section id="tracks" className="scroll-mt-14 border-t border-[var(--rule)] py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-6">
@@ -23,7 +58,7 @@ export function Tracks() {
         </Reveal>
 
         <div className="mt-14 grid gap-px border border-[var(--rule)] bg-[var(--rule)] sm:grid-cols-2">
-          {TRACKS.map((track, i) => (
+          {tracks.map((track, i) => (
             <Reveal key={track.code} delay={i * 90}>
               <Link
                 href={`/tracks/${track.slug}`}
@@ -61,10 +96,12 @@ export function Tracks() {
                     <dt className="text-bone-600">Weeks</dt>
                     <dd className="text-bone-200">{track.weeks}</dd>
                   </div>
-                  <div className="flex gap-2">
-                    <dt className="text-bone-600">Modules</dt>
-                    <dd className="text-bone-200">{track.modules}</dd>
-                  </div>
+                  {track.lessonCount !== null && (
+                    <div className="flex gap-2">
+                      <dt className="text-bone-600">Modules</dt>
+                      <dd className="text-bone-200">{track.lessonCount}</dd>
+                    </div>
+                  )}
                 </dl>
 
                 <p className="mt-5 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-bone-600">

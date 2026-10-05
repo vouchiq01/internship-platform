@@ -1,3 +1,7 @@
+/**
+ * Marketing copy only. Anything a student can count — modules, duration,
+ * price — comes from the database, not from here.
+ */
 export interface TrackMeta {
   code: string;
   slug: string;
@@ -6,7 +10,6 @@ export interface TrackMeta {
   /** CSS custom-property name for this track's index colour. */
   accent: string;
   weeks: number;
-  modules: number;
   project: string;
 }
 
@@ -23,7 +26,6 @@ export const TRACKS: TrackMeta[] = [
       'Ship a full-stack application with authentication, a real database and a deploy pipeline.',
     accent: 'var(--color-track-dev)',
     weeks: 8,
-    modules: 24,
     project: 'Full-stack web application',
   },
   {
@@ -34,7 +36,6 @@ export const TRACKS: TrackMeta[] = [
       'Build an end-to-end automation suite that catches real regressions, not just green ticks.',
     accent: 'var(--color-track-qa)',
     weeks: 8,
-    modules: 21,
     project: 'E2E automation framework',
   },
   {
@@ -45,7 +46,6 @@ export const TRACKS: TrackMeta[] = [
       'Take a model from prompt to production — retrieval, evaluation, and cost you can defend.',
     accent: 'var(--color-track-ai)',
     weeks: 10,
-    modules: 26,
     project: 'Retrieval-augmented application',
   },
   {
@@ -56,7 +56,6 @@ export const TRACKS: TrackMeta[] = [
       'Containerise, automate and observe a service until a deploy stops being frightening.',
     accent: 'var(--color-track-ops)',
     weeks: 8,
-    modules: 22,
     project: 'CI/CD pipeline with monitoring',
   },
 ];

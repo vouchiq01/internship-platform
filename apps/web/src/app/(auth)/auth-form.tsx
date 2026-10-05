@@ -31,7 +31,15 @@ export function AuthForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       ? await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: fullName } },
+          options: {
+            data: { full_name: fullName },
+            // Without this, Supabase builds the confirmation link from the
+            // project's Site URL — which points at localhost until someone
+            // changes it, sending every real user to a dead link. Deriving it
+            // from the current origin means the link always comes back to
+            // whichever deployment the person actually signed up on.
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
         })
       : await supabase.auth.signInWithPassword({ email, password });
 

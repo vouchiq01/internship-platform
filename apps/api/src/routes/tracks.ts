@@ -1,11 +1,17 @@
 import { Router } from 'express';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { LessonSummary, ProjectSummary, Track, TrackDetail } from '@internship/shared';
+import type {
+  LessonSummary,
+  ProjectSummary,
+  Track,
+  TrackDetail,
+  TrackWithCount,
+} from '@internship/shared';
 import { AppError } from '../errors.js';
 import { requireParam } from '../params.js';
 
 export interface TracksDeps {
-  listTracks(): Promise<Track[]>;
+  listTracks(): Promise<TrackWithCount[]>;
   getTrackBySlug(slug: string): Promise<TrackDetail | null>;
 }
 
@@ -84,7 +90,26 @@ export function createTracksDeps(supabase: SupabaseClient): TracksDeps {
         .eq('is_published', true)
         .order('sort_order', { ascending: true });
       if (error) throw new AppError(500, 'track_list_failed', error.message);
-      return (data as TrackRow[]).map(rowToTrack);
+
+      const rows = (data ?? []) as TrackRow[];
+      if (rows.length === 0) return [];
+
+      // One batched query for the counts rather than one per track.
+      const { data: lessonRows, error: lessonError } = await supabase
+        .from('lessons')
+        .select('track_id')
+        .in('track_id', rows.map((r) => r.id));
+      if (lessonError) throw new AppError(500, 'track_list_failed', lessonError.message);
+
+      const counts = new Map<string, number>();
+      for (const row of (lessonRows ?? []) as { track_id: string }[]) {
+        counts.set(row.track_id, (counts.get(row.track_id) ?? 0) + 1);
+      }
+
+      return rows.map((row) => ({
+        ...rowToTrack(row),
+        lessonCount: counts.get(row.id) ?? 0,
+      }));
     },
 
     async getTrackBySlug(slug) {

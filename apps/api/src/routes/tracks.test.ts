@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import express from 'express';
 import request from 'supertest';
-import type { Track, TrackDetail } from '@internship/shared';
+import type { Track, TrackDetail, TrackWithCount } from '@internship/shared';
 import { createTracksRouter } from './tracks.js';
 import { errorHandler } from '../errors.js';
 
@@ -32,7 +32,10 @@ const devDetail: TrackDetail = {
 function buildApp(detail: TrackDetail | null = devDetail) {
   const app = express();
   app.use('/api', createTracksRouter({
-    listTracks: async () => [dev, qa],
+    listTracks: async () => [
+      { ...dev, lessonCount: 6 },
+      { ...qa, lessonCount: 4 },
+    ],
     getTrackBySlug: async (slug) => (detail && detail.slug === slug ? detail : null),
   }));
   app.use(errorHandler);
@@ -46,10 +49,18 @@ describe('GET /api/tracks', () => {
     expect(res.body.map((t: Track) => t.slug)).toEqual(['development', 'qa']);
   });
 
+  it('carries the real lesson count so marketing copy cannot drift', async () => {
+    const res = await request(buildApp()).get('/api/tracks');
+    expect(res.body.map((t: TrackWithCount) => t.lessonCount)).toEqual([6, 4]);
+  });
+
   it('never exposes an unpublished track through the list', async () => {
     const app = express();
     app.use('/api', createTracksRouter({
-      listTracks: async () => [dev, { ...qa, isPublished: false }],
+      listTracks: async () => [
+        { ...dev, lessonCount: 6 },
+        { ...qa, isPublished: false, lessonCount: 4 },
+      ],
       getTrackBySlug: async () => null,
     }));
     const res = await request(app).get('/api/tracks');

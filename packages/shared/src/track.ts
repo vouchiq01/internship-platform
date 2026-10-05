@@ -17,6 +17,20 @@ export const trackSchema = z.object({
 
 export type Track = z.infer<typeof trackSchema>;
 
+/**
+ * A track in the public catalogue, carrying its real lesson count.
+ *
+ * The landing page used to show hardcoded module numbers written before the
+ * curriculum existed, which meant it advertised more lessons than a student
+ * actually received. The count now comes from the same database the track
+ * page reads, so the two can never disagree again.
+ */
+export const trackWithCountSchema = trackSchema.extend({
+  lessonCount: z.number().int().nonnegative(),
+});
+
+export type TrackWithCount = z.infer<typeof trackWithCountSchema>;
+
 export const lessonSummarySchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
